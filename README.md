@@ -1,3 +1,3 @@
-#BOTNATOR
+# BOTNATOR
 
-##A Discord Bot :D
+## A Discord Bot :D
