@@ -1,0 +1,23 @@
+{
+  "name": "botnator",
+  "version": "1.0.0",
+  "description": "A quite simple modular bot engine",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gaabrielhs/botnator.git"
+  },
+  "keywords": [
+    "discord",
+    "bot"
+  ],
+  "author": "Anderson N. Silva and Gabriel Henrique",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gaabrielhs/botnator/issues"
+  },
+  "homepage": "https://github.com/Gaabrielhs/botnator#readme"
+}
