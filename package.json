@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/Gaabrielhs/botnator/issues"
   },
-  "homepage": "https://github.com/Gaabrielhs/botnator#readme"
+  "homepage": "https://github.com/Gaabrielhs/botnator#readme",
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  }
 }
