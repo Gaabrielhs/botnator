@@ -2,10 +2,14 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 module.exports = {
     name: 'Hello World bot',
+    token: null,
 
     events: {
         onRegister(botnator) {
-            console.log('I was successfully registered XD', (botnator) ? 'simm' : 'naoo');
+            console.log('I\'wont do anything here...');
+        },
+        onConfigure(botnator) {
+            module.exports.token = botnator.credentials.token;
         }
     },
 
@@ -28,8 +32,8 @@ module.exports = {
             
             message.channel.send('VOCÊ QUIS DIZER: ' + message.content);
         });
-        client.login('NTkzODczMDcxMjg3NTY2MzQ4.XRVVZQ.HpNRBEYC7Phjz9Md8dmpf6KW8Qk');
-        console.log('Doing the magic... Showing: HELLO WORLD!');
+        client.login(this.token);
+        console.log('Doing the magic... Connectig using the following token: ' + this.token);
     },
 
     understandVoice (channel) {
