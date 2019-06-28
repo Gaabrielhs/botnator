@@ -9,7 +9,7 @@ module.exports = {
             console.log('I\'wont do anything here...');
         },
         onConfigure(botnator) {
-            module.exports.token = botnator.credentials.token;
+            module.exports.token = botnator.credentials.discord.token;
         }
     },
 

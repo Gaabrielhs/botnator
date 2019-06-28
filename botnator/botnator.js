@@ -9,13 +9,12 @@ module.exports = {
         }
     },
     configure() {
-        this.credentials = require('../credentials/discord.json');
+        this.credentials.discord = require('../credentials/discord.json');
         this.bots.forEach(bot => {
             if (bot.events && bot.events.onConfigure) {
                 bot.events.onConfigure(this);
             }
-        })
-        console.log('Configuring botnator...', this.credentials.token);
+        });
     },
     run() {
         console.log('Running botnator...');
