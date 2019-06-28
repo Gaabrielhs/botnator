@@ -4,19 +4,20 @@ module.exports = {
     name: 'Hello World bot',
 
     events: {
-        onRegister() {
-            console.log('I was successfully registered XD');
+        onRegister(botnator) {
+            console.log('I was successfully registered XD', (botnator) ? 'simm' : 'naoo');
         }
-    },
-
-    register(botnator) {
-        console.log('Registering Hello World bot!');
-        botnator.addBot(this);
     },
 
     run() {
         client.on('ready', response => {
-            console.log('Login com sucesso: ', client.channels.keys().next());
+            const values = client.channels.values();
+            for(let x = 0; x < client.channels.size; x++) {
+                const channel = values.next().value;
+                if (channel.type === 'voice') {
+                    this.understandVoice(channel);
+                }
+            }
             
         });
         client.on('message', message => {
@@ -29,5 +30,10 @@ module.exports = {
         });
         client.login('NTkzODczMDcxMjg3NTY2MzQ4.XRVVZQ.HpNRBEYC7Phjz9Md8dmpf6KW8Qk');
         console.log('Doing the magic... Showing: HELLO WORLD!');
+    },
+
+    understandVoice (channel) {
+        channel.join();
+        console.log(channel);
     }
 }

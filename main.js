@@ -5,7 +5,7 @@ const botnator = require('./botnator/botnator');
 const botHelloWorld = require('./bots/helloworld/main');
 
 //registering bots:
-botHelloWorld.register(botnator);
+botnator.registerBot(botHelloWorld);
 
 botnator.configure();
 botnator.run();
