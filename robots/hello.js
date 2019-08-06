@@ -1,8 +1,13 @@
-function robot(msg){
-    console.log("Hello bot")
-    if(msg.content == '$status'){
-        msg.reply('GHS BOT IS WORKING')
-    }
+const commands = [
+    '$status',
+    '$truth'
+]
+function robot(entrada, saida){
+    entrada(() => {
+        if (logica) {
+            saida('Olá, eu disse a verdade');
+        }
+    }, commands);
 }
 
 module.exports = robot

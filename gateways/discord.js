@@ -20,7 +20,23 @@ function registerEvents(){
   })
 
   client.on('message', msg => {
-    robots.hello(msg)
+    if (msg.mentions.members.first().user.id !== client.user.id) {
+      console.log('Mencionou alguém, mas não fui eu');
+      return;
+    }
+    for (let indexOfRobot in robots) {
+      robots[indexOfRobot](
+        (callback, commands) => {
+          console.log('mensagem recebida =>>> ' + msg.content);
+          if (commands.indexOf(msg.content) > -1) {
+            callback(msg.content);
+          }
+        }, 
+        (response) => {
+          msg.reply(response);
+        }
+      )
+    }
   })
 }
 
