@@ -19,10 +19,17 @@ function registerEvents(){
     console.log(`Logged in as ${client.user.tag}!`)
   })
 
-  client.on('message', msg => {
+  client.on('message', async msg => {
     if (msg.mentions.members.first().user.id !== client.user.id) {
       console.log('Mencionou alguém, mas não fui eu');
       return;
+    }
+    if (msg.content.indexOf('fala') > -1) {
+      if (!msg.member.voiceChannel) {
+        return msg.reply('Não posso falar, você não está em um voice channel!');
+      }
+      const connection = await msg.member.voiceChannel.join();
+      const dispatcher = connection.playFile('/home/andersonef/Projects/botnator/extras/sample.mp3');
     }
     for (let indexOfRobot in robots) {
       robots[indexOfRobot](

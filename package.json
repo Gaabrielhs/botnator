@@ -4,7 +4,8 @@
   "description": "A quite simple modular bot engine",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,7 @@
   "homepage": "https://github.com/Gaabrielhs/botnator#readme",
   "dependencies": {
     "discord.js": "^11.5.1",
-    "ffmpeg-binaries": "3.2.2-3",
+    "ffmpeg-binaries": "^3.2.2",
     "fs": "0.0.1-security",
     "nodemon": "^1.19.1"
   }
