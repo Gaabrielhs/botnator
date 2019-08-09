@@ -25,6 +25,9 @@
     "discord.js": "^11.5.1",
     "ffmpeg-binaries": "^3.2.2",
     "fs": "0.0.1-security",
-    "nodemon": "^1.19.1"
+    "googleapis": "^42.0.0",
+    "node-opus": "^0.3.2",
+    "nodemon": "^1.19.1",
+    "ytdl-core": "^0.29.5"
   }
 }
