@@ -5,28 +5,21 @@ const robots = {
     hello: require('../robots/hello'),
     youtubeSearch: require('../robots/youtubeSearch')
 }
-
-const {google} = require('googleapis');
 const ytdl = require('ytdl-core');
 
-// initialize the Youtube API library
-const youtube = google.youtube({
-  version: 'v3',
-  auth: config.credentials.google_api,
-});
+
 
 
 // TODO: base interface
 function gateway(){
     console.log("Starting Discord Gateway...")
     login()
-
     registerEvents()
 }
 
 function registerEvents(){
   client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`)
+    console.log(`Logged in as ${client.user.tag}!`);
   })
 
   client.on('message', async msg => {
@@ -38,6 +31,10 @@ function registerEvents(){
       return;
     }
 
+    if(msg.content.indexOf('ping') > -1) {
+      msg.reply(`Pong!`);
+    }
+
     if (msg.content.indexOf('tocar') > -1) {
       if (!msg.member.voiceChannel) {
         return msg.reply('Não posso tocar, você não está em um voice channel!');
@@ -47,14 +44,25 @@ function registerEvents(){
       const search = msg.content.substr(lastIndex);
       console.log(`Parametro de busca: ${search}`);
 
-      const link = await robots.youtubeSearch(search);
+      let link = search;
+      if(!ytdl.validateURL(link)){
+        link = await robots.youtubeSearch(search);
+      }
       console.log(`Link encontrado: ${link}`);
 
       const dispatcher = connection.playStream(ytdl(link));
 
+      dispatcher.on('start', () => {
+        msg.reply(`tocando: ${link}`);
+      });
+
       dispatcher.on('end', () => {
         connection.disconnect();
       });
+
+      dispatcher.on('error', e => {
+        console.log(e);
+      })
     }
 
     if(msg.content.indexOf('pesquisar') > -1) {
@@ -83,7 +91,7 @@ function registerEvents(){
 
 async function login(){
     console.log("Login discord api")
-    await client.login(config.credentials.bot_token)
+    await client.login(config.credentials.bot_token);
 }
 
 module.exports = gateway
