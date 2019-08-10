@@ -1,8 +1,8 @@
 /*
- *  
+ *
  *  09/08/2019 19:20 by Gaabrielhs
  *  Return a youtube url from searchQuery using googleapis
- * 
+ *
  */
 
 const {google} = require('googleapis');
@@ -19,12 +19,13 @@ async function search (searchQuery) {
     const res = await youtube.search.list({
         part: 'id',
         maxResults: 1,
+        type: 'video',
         q: searchQuery
     });
 
     if(res.data.items.length == 0) return null;
 
-    const videoId = res.data.items[0].id.videoId;    
+    const videoId = res.data.items[0].id.videoId;
     return base_url + videoId;
 }
 
