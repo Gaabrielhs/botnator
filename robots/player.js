@@ -13,6 +13,15 @@ async function robot(msg){
 
     const serverQueue = queue.get(msg.guild.id);
 
+    if(msg.content.indexOf('sabadaço') > -1){
+        stop(msg, serverQueue);
+        msg.content = msg.content.replace('sabadaço', 'tocar ') + 'https://youtu.be/LCDaw0QmQQc';
+        console.log(msg.content);
+
+        execute(msg, serverQueue);
+        return
+    }
+
     if(msg.content.indexOf('tocar') > -1) {
         execute(msg, serverQueue);
         return
@@ -95,7 +104,8 @@ async function play(guildId, music = null){
 
 function skip(msg, serverQueue) {
     if(!serverQueue){
-        msg.channel.send(`Server sem fila ainda...`);
+        // msg.channel.send(`Server sem fila ainda...`);
+        console.log('Server sem fila ainda...');
         return
     }
     serverQueue.voiceChannel.connection.dispatcher.end();
@@ -103,7 +113,8 @@ function skip(msg, serverQueue) {
 
 function stop(msg, serverQueue) {
     if(!serverQueue){
-        msg.channel.send(`Server sem fila ainda...`);
+        // msg.channel.send(`Server sem fila ainda...`);
+        console.log('Server sem fila ainda...');
         return
     }
     serverQueue.musics = [];

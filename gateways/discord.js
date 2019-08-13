@@ -3,7 +3,6 @@ const Discord = require('discord.js')
 const client = new Discord.Client()
 const robots = {
     hello: require('../robots/hello'),
-    youtubeSearch: require('../robots/youtubeSearch'),
     player: require('../robots/player')
 }
 
@@ -22,52 +21,39 @@ function registerEvents(){
   client.on('message', async msg => {
     //Ignorar se a mensagem vier de um bot
     if (msg.author.bot) return;
-
-    if (msg.mentions.members.first() && msg.mentions.members.first().user.id !== client.user.id) {
-      console.log('Mencionou alguém, mas não fui eu');
+    if(!msg.mentions.members.first()) return;
+    if (msg.mentions.members.first().user.id !== client.user.id) {
       return;
     }
 
     if(msg.content.indexOf('ping') > -1) {
-      msg.reply(`Pong!`);
+      msg.reply(`🏓 Pong!`);
     }
 
-    if (msg.content.indexOf('tocar') > -1 || msg.content.indexOf('pular') > -1 || msg.content.indexOf('parar') > -1) {
+    if (msg.content.indexOf('tocar') > -1 || msg.content.indexOf('pular') > -1 || msg.content.indexOf('parar') > -1 || msg.content.indexOf('sabadaço') > -1) {
       robots.player(msg);
     }
 
-    if(msg.content.indexOf('pesquisar') > -1) {
+    if(msg.content.indexOf('gancho') > -1){
+
+      const randomNumber = Math.floor(Math.random() * 100);
+      if(randomNumber < 4){
+        // msg.channel.send(`${msg.member.nickname || msg.member.user.username} saiu do gancho na sua frente! 😎`);
+        msg.reply(`saiu do gancho na sua frente! 😎`);
+      }else{
+        // msg.channel.send(`${msg.member.nickname || msg.member.user.username} foi pra entidade mais próxima!`);
+        msg.reply(`foi pra entidade mais próxima! 🔪`);
+      }
+
+      return
+    }
+
+    /* if(msg.content.indexOf('pesquisar') > -1) {
       const lastIndex = msg.content.lastIndexOf('pesquisar') + 1 + ('pesquisar'.length);
       const search = msg.content.substr(lastIndex);
       const link = await robots.youtubeSearch(search);
       msg.reply(`encontrei isso daqui no youtube: ${link}`);
-    }
-
-    if(msg.content.indexOf('gado') > -1) {
-      if (!msg.member.voiceChannel) {
-        return msg.reply('Não posso tocar, você não está em um voice channel!');
-      }
-      const connection = await msg.member.voiceChannel.join().catch(e => {
-        msg.channel.send(`Não consegui me conectar ao seu canal de voz`);
-        return
-      });
-
-      const dispatcher = connection.playFile('/home/ghs/gado.mp3');
-
-      dispatcher.on('start', () => {
-        msg.reply(`tocando rei do gado`);
-      });
-
-      dispatcher.on('end', () => {
-        connection.disconnect();
-      });
-
-      dispatcher.on('error', e => {
-        console.log(e);
-      });
-
-
-    }
+    } */
   })
 }
 
