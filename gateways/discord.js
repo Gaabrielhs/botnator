@@ -22,7 +22,7 @@ function registerEvents(){
     //Ignorar se a mensagem vier de um bot
     if (msg.author.bot) return;
     if (!msg.mentions.members.first()) return;
-    if (msg.mentions.members.first().user.id !== client.user.id) {
+    if (msg.mentions.members.find(member => member.id = client.user.id) === null) {
       return;
     }
 
@@ -52,8 +52,7 @@ function registerEvents(){
     if(msg.content.indexOf('falar') > -1) {
       const lastIndex = msg.content.lastIndexOf('falar') + 1 + ('falar'.length);
       const sentence = msg.content.substr(lastIndex);
-
-      msg.delete().catch(xD => {});
+      msg.delete().catch(xD => { console.log(xD) });
       msg.channel.send(sentence);
     }
 
