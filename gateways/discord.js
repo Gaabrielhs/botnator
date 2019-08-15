@@ -21,13 +21,14 @@ function registerEvents(){
   client.on('message', async msg => {
     //Ignorar se a mensagem vier de um bot
     if (msg.author.bot) return;
-    if(!msg.mentions.members.first()) return;
+    if (!msg.mentions.members.first()) return;
     if (msg.mentions.members.first().user.id !== client.user.id) {
       return;
     }
 
     if(msg.content.indexOf('ping') > -1) {
-      msg.reply(`🏓 Pong!`);
+      const responseMessage = await msg.channel.send(`Ping?`);
+      responseMessage.edit(`🏓 Pong! \`${msg.createdTimestamp - responseMessage.createdTimestamp}ms\` | Ping server: \`${client.ping}ms\``)
     }
 
     if (msg.content.indexOf('tocar') > -1 || msg.content.indexOf('pular') > -1 || msg.content.indexOf('parar') > -1 || msg.content.indexOf('sabadaço') > -1) {

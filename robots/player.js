@@ -16,8 +16,6 @@ async function robot(msg){
     if(msg.content.indexOf('sabadaço') > -1){
         stop(msg, serverQueue);
         msg.content = msg.content.replace('sabadaço', 'tocar ') + 'https://youtu.be/LCDaw0QmQQc';
-        console.log(msg.content);
-
         execute(msg, serverQueue);
         return
     }
@@ -66,6 +64,7 @@ async function execute(msg, serverQueue){
             msg.channel.send(`Não consegui me conectar ao seu canal de voz`);
             return
         });
+        
         /* console.log(`Voice channel`);
         console.log(msg.member.voiceChannel); */
         play(msg.guild.id, music);
