@@ -35,7 +35,7 @@ function registerEvents(){
       robots.player(msg);
     }
 
-    if(msg.content.indexOf('gancho') > -1){
+    if(msg.content.indexOf('gancho') > -1) {
 
       const randomNumber = Math.floor(Math.random() * 100);
       if(randomNumber < 4){
@@ -47,6 +47,14 @@ function registerEvents(){
       }
 
       return
+    }
+
+    if(msg.content.indexOf('falar') > -1) {
+      const lastIndex = msg.content.lastIndexOf('falar') + 1 + ('falar'.length);
+      const sentence = msg.content.substr(lastIndex);
+
+      msg.delete().catch(xD => {});
+      msg.channel.send(sentence);
     }
 
     /* if(msg.content.indexOf('pesquisar') > -1) {
