@@ -1,0 +1,9 @@
+version: "3"
+services:
+  botnator:
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - /app/node_modules
+      - .:/app
