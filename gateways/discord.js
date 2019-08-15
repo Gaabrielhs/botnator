@@ -28,7 +28,7 @@ function registerEvents(){
 
     if(msg.content.indexOf('ping') > -1) {
       const responseMessage = await msg.channel.send(`Ping?`);
-      responseMessage.edit(`🏓 Pong! \`${msg.createdTimestamp - responseMessage.createdTimestamp}ms\` | Ping server: \`${client.ping}ms\``)
+      responseMessage.edit(`🏓 Pong! \`${responseMessage.createdTimestamp - msg.createdTimestamp}ms\` | Ping server: \`${client.ping}ms\``)
     }
 
     if (msg.content.indexOf('tocar') > -1 || msg.content.indexOf('pular') > -1 || msg.content.indexOf('parar') > -1 || msg.content.indexOf('sabadaço') > -1) {
