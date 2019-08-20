@@ -72,4 +72,6 @@ async function login(){
 }
 
 
-module.exports = gateway
+module.exports = {
+  gateway
+};
