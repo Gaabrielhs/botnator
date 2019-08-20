@@ -20,10 +20,15 @@ async function search (searchQuery) {
         part: 'id',
         type: 'video',
         maxResults: 1,
+        type: 'video',
         q: searchQuery
     });
 
     if(res.data.items.length == 0) return null;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/youtube-search
     const videoId = res.data.items[0].id.videoId;
     return base_url + videoId;
 }
