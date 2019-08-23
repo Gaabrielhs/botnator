@@ -1,9 +1,10 @@
 import { IBotnatorRobot } from './IBotnatorRobot';
+import { BotManager } from '../core/managers/BotManager';
 
 
 export interface IBotnatorGateway {
     gatewayName: string;
-    robots: IBotnatorRobot[];
+    robotManager: BotManager;
 
     login(): void;
 

@@ -10,6 +10,8 @@ export class HelloBot implements IBotnatorRobot {
         'responda'
     ];
 
+    mainResponseType = BotnatorResponseType.String;
+
     execute(entrada: IBotnatorRequest): IBotnatorResponse {
         if (entrada.command === 'ola') {
             return {

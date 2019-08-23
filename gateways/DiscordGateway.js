@@ -37,14 +37,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var discord_js_1 = require("discord.js");
 var HelloBot_1 = require("../robots/HelloBot");
-var PlayerBot_1 = require("../robots/PlayerBot");
+var IBotnatorResponse_1 = require("../interfaces/IBotnatorResponse");
+var BotManager_1 = require("../core/managers/BotManager");
 var DiscordGateway = /** @class */ (function () {
     function DiscordGateway() {
         this.gatewayName = 'Discord Gateway';
-        this.robots = [
-            new HelloBot_1.HelloBot(),
-            new PlayerBot_1.PlayerBot()
-        ];
+        this.robotManager = new BotManager_1.BotManager([
+            new HelloBot_1.HelloBot()
+        ]);
         this.client = new discord_js_1.Client();
     }
     DiscordGateway.prototype.login = function () {
@@ -52,7 +52,7 @@ var DiscordGateway = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log("Login discord api");
+                        console.log("Login discord api, using token =>>> " + process.env.DISCORD_TOKEN);
                         return [4 /*yield*/, this.client.login(process.env.DISCORD_TOKEN)];
                     case 1:
                         _a.sent();
@@ -67,7 +67,7 @@ var DiscordGateway = /** @class */ (function () {
             console.log("Logged in as " + _this.client.user.tag + "!");
         });
         this.client.on('message', function (msg) { return __awaiter(_this, void 0, void 0, function () {
-            var responseMessage, command, randomNumber, lastIndex, sentence;
+            var responseMessage, listenerBots, _i, listenerBots_1, robot, botResponse;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -84,45 +84,40 @@ var DiscordGateway = /** @class */ (function () {
                         return [4 /*yield*/, msg.channel.send("Ping?")];
                     case 1:
                         responseMessage = _a.sent();
-                        _a.label = 2;
+                        responseMessage[0].edit("\uD83C\uDFD3 Pong! `" + (responseMessage[0].createdTimestamp - msg.createdTimestamp) + "ms` | Ping server: `" + this.client.ping + "ms`");
+                        return [2 /*return*/];
                     case 2:
-                        if (msg.content.indexOf('tocar') > -1 || msg.content.indexOf('pular') > -1 || msg.content.indexOf('parar') > -1 || msg.content.indexOf('sabadaço') > -1) {
-                            if (msg.content.indexOf('tocar') > -1)
-                                command = 'tocar';
-                            if (msg.content.indexOf('pular') > -1)
-                                command = 'pular';
-                            if (msg.content.indexOf('parar') > -1)
-                                command = 'parar';
-                            if (msg.content.indexOf('sabadaço') > -1)
-                                command = 'sabadaço';
-                            this.robots
-                                .filter(function (robot) {
-                                return (robot.robotName === 'PlayerBot');
-                            })
-                                .pop()
-                                .execute({
-                                command: command,
+                        listenerBots = this.robotManager.getBotsAvailableForMessage(msg.content);
+                        for (_i = 0, listenerBots_1 = listenerBots; _i < listenerBots_1.length; _i++) {
+                            robot = listenerBots_1[_i];
+                            if ([
+                                IBotnatorResponse_1.BotnatorResponseType.Stream,
+                                IBotnatorResponse_1.BotnatorResponseType.AudioFile
+                            ].includes(robot.mainResponseType) &&
+                                !msg.member.voiceChannel) {
+                                msg.reply("O Bot " + robot.robotName + " requer que voc\u00EA esteja em um canal de \u00E1udio para executar o comando solicitado");
+                                continue;
+                            }
+                            botResponse = robot.execute({
+                                command: this.robotManager.extractCommandForBot(robot, msg.content),
                                 params: msg.content.split(' '),
-                                rawMessage: msg.content
-                            });
-                        }
-                        if (msg.content.indexOf('gancho') > -1) {
-                            randomNumber = Math.floor(Math.random() * 100);
-                            if (randomNumber < 4) {
-                                // msg.channel.send(`${msg.member.nickname || msg.member.user.username} saiu do gancho na sua frente! 😎`);
-                                msg.reply("saiu do gancho na sua frente! \uD83D\uDE0E");
+                                rawMessage: msg.content,
+                                senderId: msg.member.id,
+                                senderGroupId: msg.guild.id
+                            }, msg);
+                            switch (botResponse.type) {
+                                case IBotnatorResponse_1.BotnatorResponseType.String:
+                                    msg.reply(botResponse.responseContent);
+                                    break;
+                                case IBotnatorResponse_1.BotnatorResponseType.Stream:
+                                    if (!msg.member.voiceChannel) {
+                                        msg.reply("O Bot " + robot.robotName + " requer que voc\u00EA esteja em um canal de \u00E1udio para executar o comando solicitado");
+                                        break;
+                                    }
+                                    msg.member.voiceChannel.connection.playStream(botResponse.responseContent);
+                                    break;
+                                // TODO: IMplement the other types here
                             }
-                            else {
-                                // msg.channel.send(`${msg.member.nickname || msg.member.user.username} foi pra entidade mais próxima!`);
-                                msg.reply("foi pra entidade mais pr\u00F3xima! \uD83D\uDD2A");
-                            }
-                            return [2 /*return*/];
-                        }
-                        if (msg.content.indexOf('falar') > -1) {
-                            lastIndex = msg.content.lastIndexOf('falar') + 1 + ('falar'.length);
-                            sentence = msg.content.substr(lastIndex);
-                            msg["delete"]()["catch"](function (xD) { console.log(xD); });
-                            msg.channel.send(sentence);
                         }
                         return [2 /*return*/];
                 }

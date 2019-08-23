@@ -1,10 +1,12 @@
 import { IBotnatorRequest } from './IBotnatorRequest';
-import { IBotnatorResponse } from './IBotnatorResponse';
+import { IBotnatorResponse, BotnatorResponseType } from './IBotnatorResponse';
 
 export interface IBotnatorRobot {
     robotName: string;
     robotDescription: string;
     commands: string[];
 
-    execute(entrada: IBotnatorRequest): IBotnatorResponse;
+    mainResponseType: BotnatorResponseType;
+
+    execute(entrada: IBotnatorRequest, ...params: any): IBotnatorResponse;
 }

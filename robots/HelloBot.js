@@ -7,6 +7,7 @@ var HelloBot = /** @class */ (function () {
             'ola',
             'responda'
         ];
+        this.mainResponseType = IBotnatorResponse_1.BotnatorResponseType.String;
     }
     HelloBot.prototype.execute = function (entrada) {
         if (entrada.command === 'ola') {

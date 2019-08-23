@@ -6,4 +6,8 @@ export interface IBotnatorRequest {
 
     params: string[];
 
+    senderId: string;
+
+    senderGroupId: string;
+
 }

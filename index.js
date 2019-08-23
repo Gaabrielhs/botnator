@@ -1,12 +1,14 @@
 "use strict";
 exports.__esModule = true;
-var discord_1 = require("./gateways/discord");
+var DiscordGateway_1 = require("./gateways/DiscordGateway");
+var dotenv_1 = require("dotenv");
 var Botnator = /** @class */ (function () {
     function Botnator() {
     }
     Botnator.prototype.start = function () {
         console.log('Starting gateways...');
-        discord_1.gateway();
+        dotenv_1.config();
+        new DiscordGateway_1.DiscordGateway().start();
     };
     return Botnator;
 }());

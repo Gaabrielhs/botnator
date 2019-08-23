@@ -1,10 +1,11 @@
-import { gateway as discordGateway } from './gateways/discord';
-
+import { DiscordGateway } from './gateways/DiscordGateway';
+import { config } from 'dotenv';
 
 class Botnator {
     start() {
         console.log('Starting gateways...');
-        discordGateway();
+        config();
+        new DiscordGateway().start();
     }
 }
 

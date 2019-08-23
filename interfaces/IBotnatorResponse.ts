@@ -1,6 +1,7 @@
 export interface IBotnatorResponse {
-    type: BotnatorResponseType,
-    responseContent: any
+    type: BotnatorResponseType;
+    responseContent: any;
+    additionalMessage?: string;
 }
 
 export enum BotnatorResponseType {
