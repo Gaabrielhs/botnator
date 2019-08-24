@@ -1,9 +1,9 @@
 import { IBotnatorRobot } from "../interfaces/IBotnatorRobot";
 import { IBotnatorRequest } from "../interfaces/IBotnatorRequest";
 import { IBotnatorResponse, BotnatorResponseType } from "../interfaces/IBotnatorResponse";
-import ytdl from "ytdl-core";
+import * as ytdl from "ytdl-core";
+import { google } from 'googleapis';
 import { Message } from "discord.js";
-import { defaultCoreCipherList } from "constants";
 
 export class PlayerBot implements IBotnatorRobot {
     robotName: 'PlayerBot';
@@ -21,43 +21,53 @@ export class PlayerBot implements IBotnatorRobot {
 
     protected msg: Message;
 
+    protected youtube: any;
+
+    constructor() {
+        this.youtube = google.youtube({
+            auth: process.env.YOUTUBE_API,
+            version: 'v3'
+        });
+        console.log('algo?? =>>> ', this.youtube);
+    }
+
     execute(entrada: IBotnatorRequest, ...params: any): IBotnatorResponse {
-        
-        this.msg = params[0];
+
+                this.msg = params[0];
         const serverQueue = this.queue.get(entrada.senderGroupId);
     
         if(entrada.rawMessage.indexOf('sabadaço') > -1){
             this.stop(entrada.rawMessage, serverQueue);
             this.msg.content = this.msg.content.replace('sabadaço', 'tocar ') + 'https://youtu.be/LCDaw0QmQQc';
-            this.exec(msg, serverQueue);
+            this.exec(this.msg, serverQueue);
             return
         }
     
         if(this.msg.content.indexOf('tocar') > -1) {
-            this.exec(msg, serverQueue);
+            this.exec(this.msg, serverQueue);
             return
         }
     
         if(this.msg.content.indexOf('pular') > -1) {
-            this.skip(msg, serverQueue);
+            this.skip(this.msg, serverQueue);
             return
         }
     
         if(this.msg.content.indexOf('parar') > -1) {
-            stop(this.msg, serverQueue);
+            this.stop(this.msg, serverQueue);
             return
         }
     
         this.msg.channel.send(`Comando inválido`);
         return;
         
-        
     }
 
     async exec(msg, serverQueue){
-        const link = await getLink(msg.content);
+        const link = await this.getLink(msg.content);
     
-        const music = { title, video_url } = await ytdl.getInfo(link);
+        const { title, video_url } = await ytdl.getInfo(link);
+        const music = {title, video_url};
     
         if(serverQueue){
             serverQueue.musics.push(music);
@@ -81,18 +91,18 @@ export class PlayerBot implements IBotnatorRobot {
             
             /* console.log(`Voice channel`);
             console.log(msg.member.voiceChannel); */
-            play(msg.guild.id, music);
+            this.play(msg.guild.id, music);
     
         }
     }
 
-    async function play(guildId, music = null){
-        const serverQueue = queue.get(guildId);
+    async  play(guildId, music = null){
+        const serverQueue = this.queue.get(guildId);
     
         //Saindo do canal de voz
         if(!music){
             serverQueue.voiceChannel.leave();
-            queue.delete(guildId);
+            this.queue.delete(guildId);
             return;
         }
     
@@ -106,7 +116,7 @@ export class PlayerBot implements IBotnatorRobot {
     
         dispatcher.on('end', () => {
             serverQueue.musics.shift();
-            play(guildId, serverQueue.musics[0]);
+            this.play(guildId, serverQueue.musics[0]);
         });
     
         dispatcher.on('error', e => {
@@ -115,7 +125,7 @@ export class PlayerBot implements IBotnatorRobot {
         });
     }
     
-    function skip(msg, serverQueue) {
+    skip(msg, serverQueue) {
         if(!serverQueue){
             // msg.channel.send(`Server sem fila ainda...`);
             console.log('Server sem fila ainda...');
@@ -124,7 +134,7 @@ export class PlayerBot implements IBotnatorRobot {
         serverQueue.voiceChannel.connection.dispatcher.end();
     }
     
-    function stop(msg, serverQueue) {
+    stop(msg, serverQueue) {
         if(!serverQueue){
             // msg.channel.send(`Server sem fila ainda...`);
             console.log('Server sem fila ainda...');
@@ -140,11 +150,26 @@ export class PlayerBot implements IBotnatorRobot {
     
         let link = search;
         if(!ytdl.validateURL(link)){
-            link = await ytSearch(search);
+            link = await this.search(search);
         }
         console.log(`Link encontrado: ${link}`);
         return link;
     }
-    
+
+
+    async search (searchQuery) {
+        const base_url = 'https://www.youtube.com/watch?v=';
+        const res = await this.youtube.search.list({
+            part: 'id',
+            type: 'video',
+            maxResults: 1,
+            q: searchQuery
+        });
+
+        if(res.data.items.length == 0) return null;
+
+        const videoId = res.data.items[0].id.videoId;
+        return base_url + videoId;
+    }
     
 }

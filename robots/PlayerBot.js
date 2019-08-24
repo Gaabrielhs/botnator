@@ -36,7 +36,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var IBotnatorResponse_1 = require("../interfaces/IBotnatorResponse");
-var ytdl_core_1 = require("ytdl-core");
+var ytdl = require("ytdl-core");
+var googleapis_1 = require("googleapis");
 var PlayerBot = /** @class */ (function () {
     function PlayerBot() {
         this.commands = [
@@ -47,6 +48,11 @@ var PlayerBot = /** @class */ (function () {
         ];
         this.mainResponseType = IBotnatorResponse_1.BotnatorResponseType.Stream;
         this.queue = new Map();
+        this.youtube = googleapis_1.google.youtube({
+            auth: process.env.YOUTUBE_API,
+            version: 'v3'
+        });
+        console.log('algo?? =>>> ', this.youtube);
     }
     PlayerBot.prototype.execute = function (entrada) {
         var params = [];
@@ -58,19 +64,19 @@ var PlayerBot = /** @class */ (function () {
         if (entrada.rawMessage.indexOf('sabadaço') > -1) {
             this.stop(entrada.rawMessage, serverQueue);
             this.msg.content = this.msg.content.replace('sabadaço', 'tocar ') + 'https://youtu.be/LCDaw0QmQQc';
-            this.exec(msg, serverQueue);
+            this.exec(this.msg, serverQueue);
             return;
         }
         if (this.msg.content.indexOf('tocar') > -1) {
-            this.exec(msg, serverQueue);
+            this.exec(this.msg, serverQueue);
             return;
         }
         if (this.msg.content.indexOf('pular') > -1) {
-            this.skip(msg, serverQueue);
+            this.skip(this.msg, serverQueue);
             return;
         }
         if (this.msg.content.indexOf('parar') > -1) {
-            stop(this.msg, serverQueue);
+            this.stop(this.msg, serverQueue);
             return;
         }
         this.msg.channel.send("Comando inv\u00E1lido");
@@ -78,16 +84,16 @@ var PlayerBot = /** @class */ (function () {
     };
     PlayerBot.prototype.exec = function (msg, serverQueue) {
         return __awaiter(this, void 0, void 0, function () {
-            var link, music, queueServer;
-            var _a;
+            var link, _a, title, video_url, music, queueServer;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, getLink(msg.content)];
+                    case 0: return [4 /*yield*/, this.getLink(msg.content)];
                     case 1:
                         link = _b.sent();
-                        return [4 /*yield*/, ytdl_core_1["default"].getInfo(link)];
+                        return [4 /*yield*/, ytdl.getInfo(link)];
                     case 2:
-                        music = (_a = _b.sent(), title = _a.title, video_url = _a.video_url, _a);
+                        _a = _b.sent(), title = _a.title, video_url = _a.video_url;
+                        music = { title: title, video_url: video_url };
                         if (!serverQueue) return [3 /*break*/, 3];
                         serverQueue.musics.push(music);
                         msg.channel.send("M\u00FAsica " + music.title + " adicionada a fila na posi\u00E7\u00E3o: " + serverQueue.musics.length);
@@ -108,9 +114,105 @@ var PlayerBot = /** @class */ (function () {
                         _b.sent();
                         /* console.log(`Voice channel`);
                         console.log(msg.member.voiceChannel); */
-                        play(msg.guild.id, music);
+                        this.play(msg.guild.id, music);
                         _b.label = 5;
                     case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    PlayerBot.prototype.play = function (guildId, music) {
+        if (music === void 0) { music = null; }
+        return __awaiter(this, void 0, void 0, function () {
+            var serverQueue, stream, dispatcher;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        serverQueue = this.queue.get(guildId);
+                        //Saindo do canal de voz
+                        if (!music) {
+                            serverQueue.voiceChannel.leave();
+                            this.queue["delete"](guildId);
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, ytdl(music.video_url)];
+                    case 1:
+                        stream = _a.sent();
+                        dispatcher = serverQueue.voiceChannel.connection.playStream(stream);
+                        dispatcher.on('start', function () {
+                            serverQueue.textChannel.send("Tocando: " + music.title);
+                        });
+                        dispatcher.on('end', function () {
+                            serverQueue.musics.shift();
+                            _this.play(guildId, serverQueue.musics[0]);
+                        });
+                        dispatcher.on('error', function (e) {
+                            console.log(e);
+                            serverQueue.textChannel.send("Deu merda aqui: " + e);
+                        });
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    PlayerBot.prototype.skip = function (msg, serverQueue) {
+        if (!serverQueue) {
+            // msg.channel.send(`Server sem fila ainda...`);
+            console.log('Server sem fila ainda...');
+            return;
+        }
+        serverQueue.voiceChannel.connection.dispatcher.end();
+    };
+    PlayerBot.prototype.stop = function (msg, serverQueue) {
+        if (!serverQueue) {
+            // msg.channel.send(`Server sem fila ainda...`);
+            console.log('Server sem fila ainda...');
+            return;
+        }
+        serverQueue.musics = [];
+        serverQueue.voiceChannel.connection.dispatcher.end();
+    };
+    PlayerBot.prototype.getLink = function (content) {
+        return __awaiter(this, void 0, void 0, function () {
+            var lastIndex, search, link;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        lastIndex = content.lastIndexOf('tocar') + 1 + ('tocar'.length);
+                        search = content.substr(lastIndex);
+                        link = search;
+                        if (!!ytdl.validateURL(link)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.search(search)];
+                    case 1:
+                        link = _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        console.log("Link encontrado: " + link);
+                        return [2 /*return*/, link];
+                }
+            });
+        });
+    };
+    PlayerBot.prototype.search = function (searchQuery) {
+        return __awaiter(this, void 0, void 0, function () {
+            var base_url, res, videoId;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        base_url = 'https://www.youtube.com/watch?v=';
+                        return [4 /*yield*/, this.youtube.search.list({
+                                part: 'id',
+                                type: 'video',
+                                maxResults: 1,
+                                q: searchQuery
+                            })];
+                    case 1:
+                        res = _a.sent();
+                        if (res.data.items.length == 0)
+                            return [2 /*return*/, null];
+                        videoId = res.data.items[0].id.videoId;
+                        return [2 /*return*/, base_url + videoId];
                 }
             });
         });
@@ -118,66 +220,3 @@ var PlayerBot = /** @class */ (function () {
     return PlayerBot;
 }());
 exports.PlayerBot = PlayerBot;
-function play(guildId, music) {
-    if (music === void 0) { music = null; }
-    return __awaiter(this, void 0, void 0, function () {
-        var serverQueue, stream, dispatcher;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    serverQueue = queue.get(guildId);
-                    //Saindo do canal de voz
-                    if (!music) {
-                        serverQueue.voiceChannel.leave();
-                        queue["delete"](guildId);
-                        return [2 /*return*/];
-                    }
-                    return [4 /*yield*/, ytdl_core_1["default"](music.video_url)];
-                case 1:
-                    stream = _a.sent();
-                    dispatcher = serverQueue.voiceChannel.connection.playStream(stream);
-                    dispatcher.on('start', function () {
-                        serverQueue.textChannel.send("Tocando: " + music.title);
-                    });
-                    dispatcher.on('end', function () {
-                        serverQueue.musics.shift();
-                        play(guildId, serverQueue.musics[0]);
-                    });
-                    dispatcher.on('error', function (e) {
-                        console.log(e);
-                        serverQueue.textChannel.send("Deu merda aqui: " + e);
-                    });
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-function skip(msg, serverQueue) {
-    if (!serverQueue) {
-        // msg.channel.send(`Server sem fila ainda...`);
-        console.log('Server sem fila ainda...');
-        return;
-    }
-    serverQueue.voiceChannel.connection.dispatcher.end();
-}
-function stop(msg, serverQueue) {
-    if (!serverQueue) {
-        // msg.channel.send(`Server sem fila ainda...`);
-        console.log('Server sem fila ainda...');
-        return;
-    }
-    serverQueue.musics = [];
-    serverQueue.voiceChannel.connection.dispatcher.end();
-}
-async;
-getLink(content, any);
-{
-    var lastIndex = content.lastIndexOf('tocar') + 1 + ('tocar'.length);
-    var search = content.substr(lastIndex);
-    var link = search;
-    if (!ytdl_core_1["default"].validateURL(link)) {
-        link = yield ytSearch(search);
-    }
-    console.log("Link encontrado: " + link);
-    return link;
-}

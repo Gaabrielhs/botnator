@@ -37,13 +37,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var discord_js_1 = require("discord.js");
 var HelloBot_1 = require("../robots/HelloBot");
+var PlayerBot_1 = require("../robots/PlayerBot");
 var IBotnatorResponse_1 = require("../interfaces/IBotnatorResponse");
 var BotManager_1 = require("../core/managers/BotManager");
 var DiscordGateway = /** @class */ (function () {
     function DiscordGateway() {
         this.gatewayName = 'Discord Gateway';
         this.robotManager = new BotManager_1.BotManager([
-            new HelloBot_1.HelloBot()
+            new HelloBot_1.HelloBot(),
+            new PlayerBot_1.PlayerBot()
         ]);
         this.client = new discord_js_1.Client();
     }
@@ -105,6 +107,9 @@ var DiscordGateway = /** @class */ (function () {
                                 senderId: msg.member.id,
                                 senderGroupId: msg.guild.id
                             }, msg);
+                            if (!botResponse) {
+                                continue;
+                            }
                             switch (botResponse.type) {
                                 case IBotnatorResponse_1.BotnatorResponseType.String:
                                     msg.reply(botResponse.responseContent);

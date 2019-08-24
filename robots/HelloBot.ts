@@ -1,8 +1,10 @@
 import { IBotnatorRobot } from "../interfaces/IBotnatorRobot";
 import {IBotnatorRequest} from '../interfaces/IBotnatorRequest';
 import { IBotnatorResponse, BotnatorResponseType } from '../interfaces/IBotnatorResponse';
+import { IBotnatorGateway } from "../interfaces/IBotnatorGateway";
 
 export class HelloBot implements IBotnatorRobot {
+    
     robotName: 'Hello Bot';
     robotDescription: 'A simple bot. It just say hello when someone talks with him!';
     commands = [
@@ -11,6 +13,7 @@ export class HelloBot implements IBotnatorRobot {
     ];
 
     mainResponseType = BotnatorResponseType.String;
+
 
     execute(entrada: IBotnatorRequest): IBotnatorResponse {
         if (entrada.command === 'ola') {

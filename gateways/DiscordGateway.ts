@@ -10,7 +10,8 @@ export class DiscordGateway implements IBotnatorGateway {
     gatewayName = 'Discord Gateway';
 
     robotManager = new BotManager([
-        new HelloBot()
+        new HelloBot(),
+        new PlayerBot()
     ]);
 
     protected client = new Client();
@@ -61,6 +62,9 @@ export class DiscordGateway implements IBotnatorGateway {
                     senderId: msg.member.id,
                     senderGroupId: msg.guild.id
                 }, msg);
+                if (!botResponse) {
+                    continue;
+                }
                 switch (botResponse.type) {
                     case BotnatorResponseType.String:
                         msg.reply(botResponse.responseContent);
