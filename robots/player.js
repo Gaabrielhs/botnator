@@ -41,6 +41,14 @@ async function robot(msg){
 }
 
 async function execute(msg, serverQueue){
+
+    const connect = await msg.member.voiceChannel.join().catch(e => {
+        msg.channel.send(`Não consegui me conectar ao seu canal de voz`);
+        return
+    });
+
+    if(!connect) return;
+
     const link = await getLink(msg.content);
 
     const music = { title, video_url } = await ytdl.getInfo(link);
@@ -58,12 +66,6 @@ async function execute(msg, serverQueue){
         queue.set(msg.guild.id, queueServer);
 
         queueServer.musics.push(music);
-
-
-        await msg.member.voiceChannel.join().catch(e => {
-            msg.channel.send(`Não consegui me conectar ao seu canal de voz`);
-            return
-        });
         
         /* console.log(`Voice channel`);
         console.log(msg.member.voiceChannel); */
