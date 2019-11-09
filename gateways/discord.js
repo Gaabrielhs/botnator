@@ -56,6 +56,27 @@ function registerEvents(){
       msg.channel.send(sentence);
     }
 
+    if(msg.content.indexOf('contar') > -1){
+      const lastIndex = msg.content.lastIndexOf('contar') + 1 + ('contar'.length);
+      let countInSeconds = +msg.content.substr(lastIndex);
+      if(!Number.isInteger(countInSeconds)) {
+        msg.reply(`O valor precisa ser um numero inteiro bbk`);  
+        return
+      }
+      
+      const msgSended = await msg.channel.send(`Começando a contar ${countInSeconds}s`);
+
+      let looper = setInterval(async function(){ 
+        if (countInSeconds <= 0)
+        {
+            clearInterval(looper);
+            await msgSended.edit(`Acabou o tempo! xD`)
+        }
+        
+        await msgSended.edit(`${--countInSeconds}s`)
+      }, 1000);
+
+    }
     /* if(msg.content.indexOf('pesquisar') > -1) {
       const lastIndex = msg.content.lastIndexOf('pesquisar') + 1 + ('pesquisar'.length);
       const search = msg.content.substr(lastIndex);
