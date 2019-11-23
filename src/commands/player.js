@@ -1,10 +1,8 @@
 const ytdl = require('ytdl-core');
-const ytSearch =  require('./youtubeSearch');
+const ytSearch =  require('../helpers/youtubeSearch');
 
 //Queues
 const queue = new Map();
-
-
 
 async function robot(msg){
     if (!msg.member.voiceChannel) {
@@ -125,18 +123,6 @@ function stop(msg, serverQueue) {
     const connection = serverQueue.voiceChannel.connection || msg.member.voiceChannel.connection 
     serverQueue.musics = [];
     connection.dispatcher.end();
-}
-
-async function getLink(content){
-    const lastIndex = content.lastIndexOf('tocar') + 1 + ('tocar'.length);
-    const search = content.substr(lastIndex);
-
-    let link = search;
-    if(!ytdl.validateURL(link)){
-        link = await ytSearch(search);
-    }
-    console.log(`Link encontrado: ${link}`);
-    return link;
 }
 
 
