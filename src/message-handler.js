@@ -1,14 +1,15 @@
 function handler(msg) {
     //Ignorar se a mensagem vier de um bot
-    if (msg.author.bot) throw new Error('O autor é o próprio bot!')
-    if (!msg.mentions.members.first()) throw new Error('Não existem membros nas mentions!')
+    if (msg.author.bot) return
+    if (!msg.mentions.members.first()) return
     
 
-    const message = msg.content.split(' ').splice()
+    const parts = msg.content.split(' ')
     let args = msg.content.split(' ')
     args.splice()
+    args.splice()
     return {
-        command: message,
+        command: parts[1],
         args
     }
 }

@@ -1,10 +1,6 @@
 require('dotenv').config()
 const Discord = require('discord.js')
 const client = new Discord.Client()
-const robots = {
-    hello: require('./commands/hello'),
-    player: require('./commands/player')
-}
 
 function registerEvents(){
   const messageHandler = require('./message-handler')
@@ -22,11 +18,16 @@ function registerEvents(){
   client.on('message', async msg => {
     try {
       if (msg.mentions.members.find(member => member.id = client.user.id) === null) {
-        throw new Error('Mensagem qualquer que não é pra mim!')
+        return
       }
-      const {command, args} = messageHandler(msg)
+      const response = messageHandler(msg)
+      if (!response) {
+        return
+      }
+      const {command, args} = response
       const currentCommand = sharedData.commandsMap.get(command)
       if (!currentCommand) {
+        console.log('nãoe ncontrei o commando ' + command, sharedData.commandsMap);
         return
       }
 
