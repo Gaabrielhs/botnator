@@ -42,13 +42,6 @@ async function robot(msg){
 
 async function execute(msg, serverQueue){
 
-    const connect = await msg.member.voiceChannel.join().catch(e => {
-        msg.channel.send(`Não consegui me conectar ao seu canal de voz`);
-        return
-    });
-
-    if(!connect) return;
-
     const link = await getLink(msg.content);
 
     const music = { title, video_url } = await ytdl.getInfo(link);
@@ -57,6 +50,13 @@ async function execute(msg, serverQueue){
         serverQueue.musics.push(music);
         msg.channel.send(`Música ${music.title} adicionada a fila na posição: ${serverQueue.musics.length}`);
     }else{
+
+        const connect = await msg.member.voiceChannel.join().catch(e => {
+            msg.channel.send(`Não consegui me conectar ao seu canal de voz`);
+        });
+    
+        if(!connect) return;
+
         const queueServer = {
             musics: [],
             voiceChannel: msg.member.voiceChannel,
@@ -109,7 +109,10 @@ function skip(msg, serverQueue) {
         console.log('Server sem fila ainda...');
         return
     }
-    serverQueue.voiceChannel.connection.dispatcher.end();
+
+    const connection = serverQueue.voiceChannel.connection || msg.member.voiceChannel.connection 
+    connection.dispatcher.end();
+    dispatcher.end();
 }
 
 function stop(msg, serverQueue) {
@@ -118,8 +121,10 @@ function stop(msg, serverQueue) {
         console.log('Server sem fila ainda...');
         return
     }
+
+    const connection = serverQueue.voiceChannel.connection || msg.member.voiceChannel.connection 
     serverQueue.musics = [];
-    serverQueue.voiceChannel.connection.dispatcher.end();
+    connection.dispatcher.end();
 }
 
 async function getLink(content){

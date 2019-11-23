@@ -71,6 +71,7 @@ function registerEvents(){
         {
             clearInterval(looper);
             await msgSended.edit(`Acabou o tempo! xD`)
+            return
         }
         
         await msgSended.edit(`${--countInSeconds}s`)
