@@ -1,12 +1,8 @@
 {
   "name": "botnator",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "A quite simple modular bot engine",
-  "main": "main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
-  },
+  "main": "app.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Gaabrielhs/botnator.git"
@@ -23,11 +19,10 @@
   "homepage": "https://github.com/Gaabrielhs/botnator#readme",
   "dependencies": {
     "discord.js": "^11.5.1",
+    "dotenv": "^8.2.0",
     "ffmpeg-binaries": "^3.2.2",
-    "fs": "0.0.1-security",
     "googleapis": "^42.0.0",
     "node-opus": "^0.3.2",
-    "nodemon": "^1.19.1",
     "ytdl-core": "^0.29.5"
   }
 }

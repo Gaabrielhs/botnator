@@ -6,7 +6,7 @@
  */
 
 const {google} = require('googleapis');
-const auth_token = require('../config/discord.json').credentials.google_api;
+const auth_token = process.env.GOOGLE_API;
 
 const youtube = google.youtube({
     version: 'v3',
