@@ -11,6 +11,8 @@ function registerEvents(){
     sharedData.commandsMap.set(command, execute)
   });
 
+  sharedData.queue = new Map()
+
   client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
   })

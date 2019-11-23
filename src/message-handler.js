@@ -6,8 +6,9 @@ function handler(msg) {
 
     const parts = msg.content.split(' ')
     let args = msg.content.split(' ')
-    args.splice()
-    args.splice()
+    args.shift()
+    args.shift()
+
     return {
         command: parts[1],
         args

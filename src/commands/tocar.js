@@ -1,11 +1,20 @@
+const ytdl = require('ytdl-core');
+const ytSearch =  require('../helpers/youtubeSearch');
+
 const command = 'tocar'
 
 async function execute(msg, data, args){
+    if (!msg.member.voiceChannel) {
+        throw 'Você não está em um voice channel!'
+    }
 
     const queue = data.queue
     const serverQueue = queue.get(msg.guild.id)
 
-    const link = await getLink(msg.content)
+    const sentence = args.join(' ')
+    console.log(`sentence: `,sentence)
+
+    const link = await getLink(sentence)
 
     const music = { title, video_url } = await ytdl.getInfo(link)
 
@@ -27,12 +36,13 @@ async function execute(msg, data, args){
 
         queueServer.musics.push(music)
 
-        play(queueServer, music)
-
+        play(msg.guild.id, queue, music)
     }
 }
 
-async function play(serverQueue, music = null){
+async function play(guildId, queue, music = null){
+
+    const serverQueue = queue.get(guildId)
     //Saindo do canal de voz
     if(!music){
         serverQueue.voiceChannel.leave()
@@ -50,7 +60,7 @@ async function play(serverQueue, music = null){
 
     dispatcher.on('end', () => {
         serverQueue.musics.shift()
-        play(guildId, serverQueue.musics[0])
+        play(guildId, queue, serverQueue.musics[0])
     })
 
     dispatcher.on('error', e => {
@@ -59,11 +69,8 @@ async function play(serverQueue, music = null){
     })
 }
 
-async function getLink(content){
-    const lastIndex = content.lastIndexOf('tocar') + 1 + ('tocar'.length);
-    const search = content.substr(lastIndex);
-
-    let link = search;
+async function getLink(search){
+    let link = search
     if(!ytdl.validateURL(link)){
         link = await ytSearch(search);
     }
