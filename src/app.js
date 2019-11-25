@@ -33,7 +33,7 @@ function registerEvents(){
         return
       }
 
-      currentCommand(msg, sharedData, args)
+      await currentCommand(msg, sharedData, args)
     } catch (e) {
       msg.reply('Houve um erro com o último pedido. Desculpe =(')
       console.log('ERROR: ', e)
