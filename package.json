@@ -1,6 +1,6 @@
 {
   "name": "botnator",
-  "version": "3.0.0",
+  "version": "3.1.1",
   "description": "A quite simple modular bot engine",
   "main": "app.js",
   "repository": {
