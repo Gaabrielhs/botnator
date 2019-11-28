@@ -2,6 +2,18 @@ require('dotenv').config()
 const Discord = require('discord.js')
 const client = new Discord.Client()
 
+const msgs = [
+  'oi, o ghs humano é o outro 😂',
+  'não responda esta mensagem, ou vou te responder isso novamente 🤯',
+  '?',
+  'ata',
+  'bobo',
+  'oi?',
+  'eu só toco música 😔',
+  'nem playlist eu toco ainda 🥺',
+  'q joga'
+]
+
 function registerEvents(){
   const messageHandler = require('./message-handler')
   const sharedData = {}
@@ -19,9 +31,6 @@ function registerEvents(){
 
   client.on('message', async msg => {
     try {
-      if (msg.mentions.members.find(member => member.id = client.user.id) === null) {
-        return
-      }
       const response = messageHandler(msg)
       if (!response) {
         return
@@ -29,11 +38,11 @@ function registerEvents(){
       const {command, args} = response
       const currentCommand = sharedData.commandsMap.get(command)
       if (!currentCommand) {
-        console.log('nãoe ncontrei o commando ' + command, sharedData.commandsMap);
+        msg.channel.send(msgs[Math.floor(Math.random()*msgs.length)])
         return
       }
 
-      currentCommand(msg, sharedData, args)
+      await currentCommand(msg, sharedData, args)
     } catch (e) {
       msg.reply('Houve um erro com o último pedido. Desculpe =(')
       console.log('ERROR: ', e)
