@@ -15,7 +15,7 @@ function handler(msg) {
     //     return
     // }
 
-    if(!msg.content.startsWith('ghs ')){
+    if(!msg.content.startsWith(process.env.PREFIX + " ")){
         return
     }
 

@@ -3,15 +3,15 @@ const Discord = require('discord.js')
 const client = new Discord.Client()
 
 const msgs = [
-  'oi, o ghs humano é o outro 😂',
+  'oi, o humano é o outro 😂',
   'não responda esta mensagem, ou vou te responder isso novamente 🤯',
+  'queria me chamar mesmo?',
   '?',
   'ata',
   'bobo',
   'oi?',
-  'eu só toco música 😔',
-  'nem playlist eu toco ainda 🥺',
-  'q joga'
+  'quer que eu toque uma musica?',
+  'não'
 ]
 
 function registerEvents(){
@@ -24,6 +24,8 @@ function registerEvents(){
   });
 
   sharedData.queue = new Map()
+
+  sharedData.client = client
 
   client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
