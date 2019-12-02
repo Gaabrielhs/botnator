@@ -16,6 +16,8 @@ async function execute(msg, data, args){
         await msgSended.edit(`${--countInSeconds}s`)
         setTimeout(process1Sec, 1000);
     }
+
+    process1Sec()
 }
 
 module.exports = { command, execute }
