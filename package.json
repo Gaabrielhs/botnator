@@ -23,6 +23,6 @@
     "ffmpeg-binaries": "^3.2.2",
     "googleapis": "^42.0.0",
     "node-opus": "^0.3.2",
-    "ytdl-core": "^0.29.5"
+    "ytdl-core": "^1.0.3"
   }
 }
