@@ -43,9 +43,14 @@ async function execute(msg, data, args){
 async function play(guildId, queue, music = null){
 
     const serverQueue = queue.get(guildId)
+
     //Saindo do canal de voz
     if(!music){
-        serverQueue.voiceChannel.leave()
+        const client = serverQueue.voiceChannel.client
+        let { channel } = client.voiceConnections.get(guildId)
+        if(channel){
+            channel.leave()
+        }
         queue.delete(guildId)
         return
     }
