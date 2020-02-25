@@ -9,6 +9,8 @@ async function execute(msg, data, args){
         throw 'Você não está em um voice channel!'
     }
 
+    await msg.delete()
+    
     const queue = data.queue
     const serverQueue = queue.get(msg.guild.id)
 
@@ -75,7 +77,7 @@ async function play(guildId, queue){
 
     const dispatcher = serverQueue.voiceConnection.playStream(stream)
 
-    dispatcher.on('start', () => {
+    dispatcher.on('start', async () => {
         const embed = new RichEmbed()
                             .setColor(0x0088FF)
                             .setTitle(music.title)
@@ -84,7 +86,20 @@ async function play(guildId, queue){
                             .setURL(music.video_url)
                             .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
 
-        serverQueue.textChannel.send(embed)
+        if(!serverQueue.last_message){
+            serverQueue.last_message = await serverQueue.textChannel.send(embed)
+        }else{
+            await serverQueue.last_message.edit(embed)
+        }
+        // await last_message.react('⏸')
+        await serverQueue.last_message.react('⏩')
+        
+        const collectorSkip = serverQueue.last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '⏩')
+        collectorSkip.on('collect', reaction => {
+            if(reaction.count > 1) {
+                dispatcher.end()
+            }
+        })
     })
 
     dispatcher.on('end', () => {
