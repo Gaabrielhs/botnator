@@ -9,9 +9,7 @@ async function execute(msg, data, args){
         console.log('Server sem fila ainda...');
         return
     }
-
-    const connection = serverQueue.voiceChannel.connection || msg.member.voiceChannel.connection 
-    connection.dispatcher.end();
+    serverQueue.voiceConnection.dispatcher.end();
 }
 
 module.exports = { command, execute }
