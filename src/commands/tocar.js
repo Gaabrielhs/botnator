@@ -9,8 +9,6 @@ async function execute(msg, data, args){
         throw 'Você não está em um voice channel!'
     }
 
-    await msg.delete()
-    
     const queue = data.queue
     const serverQueue = queue.get(msg.guild.id)
 
@@ -38,8 +36,7 @@ async function execute(msg, data, args){
                             .setThumbnail(music.thumbnail)
                             .setURL(music.video_url)
                             .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
-        
-        serverQueue.last_message.edit(embed)
+        serverQueue.textChannel.send(embed)
                 
     }else{
         const voiceConnection = await msg.member.voiceChannel.join().catch(e => {
@@ -87,15 +84,11 @@ async function play(guildId, queue){
                             .setURL(music.video_url)
                             .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
 
-        if(!serverQueue.last_message){
-            serverQueue.last_message = await serverQueue.textChannel.send(embed)
-        }else{
-            await serverQueue.last_message.edit(embed)
-        }
+        const last_message = await serverQueue.textChannel.send(embed)
         // await last_message.react('⏸')
-        await serverQueue.last_message.react('⏩')
+        await last_message.react('⏩')
         
-        const collectorSkip = serverQueue.last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '⏩')
+        const collectorSkip = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '⏩')
         collectorSkip.on('collect', reaction => {
             if(reaction.count > 1) {
                 dispatcher.end()
