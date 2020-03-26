@@ -28,16 +28,7 @@ async function execute(msg, data, args){
     }
 
     if(serverQueue){
-        serverQueue.musics.push(music)
-        const embed = new RichEmbed()
-                            .setColor(0x0088FF)
-                            .setTitle(music.title)
-                            .setDescription(`Adicionado a fila na posição ${serverQueue.musics.length - 1}`)
-                            .setThumbnail(music.thumbnail)
-                            .setURL(music.video_url)
-                            .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
-
-        msg.channel.send(embed)
+        addMusicToQueue(music, serverQueue)
     }else{
         const voiceConnection = await msg.member.voiceChannel.join().catch(e => {
             throw `Não consegui me conectar ao seu canal de voz`
@@ -94,6 +85,14 @@ async function play(guildId, queue){
                 dispatcher.end()
             }
         })
+
+        await last_message.react('🔂')
+        const collectorReplay = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '🔂')
+        collectorReplay.on('collect', reaction => {
+            if(reaction.count > 1) {
+                addMusicToQueue(music, serverQueue)
+            }
+        })
     })
 
     dispatcher.on('end', () => {
@@ -105,6 +104,19 @@ async function play(guildId, queue){
         console.log(e)
         serverQueue.textChannel.send(`Deu merda aqui: ${e}`)
     })
+}
+
+async function addMusicToQueue(music, serverQueue) {
+    serverQueue.musics.push(music)
+    const embed = new RichEmbed()
+                        .setColor(0x0088FF)
+                        .setTitle(music.title)
+                        .setDescription(`Adicionado a fila na posição ${serverQueue.musics.length - 1}`)
+                        .setThumbnail(music.thumbnail)
+                        .setURL(music.video_url)
+                        .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
+
+    serverQueue.textChannel.send(embed)
 }
 
 async function getLink(search){
