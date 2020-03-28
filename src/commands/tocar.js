@@ -1,6 +1,6 @@
-const { RichEmbed } = require('discord.js')
 const ytdl = require('ytdl-core')
-const ytSearch =  require('../helpers/youtubeSearch')
+
+const { getMusic, sendQueueMessage, sendPlayMessage } = require('../helpers/music')
 
 const command = 'tocar'
 
@@ -15,20 +15,12 @@ async function execute(msg, data, args){
     const sentence = args.join(' ')
     console.log(`sentence: `,sentence)
 
-    const link = await getLink(sentence)
-    const info = await ytdl.getInfo(link)
-
-    const music = { 
-        title: info.title,
-        video_url: info.video_url,
-        short_description: info.player_response.videoDetails.shortDescription,
-        duration: info.player_response.videoDetails.lengthSeconds,
-        thumbnail: info.player_response.videoDetails.thumbnail.thumbnails.pop().url,
-        requestUser: msg.member
-    }
+    const music = await getMusic(sentence)
+    music.requestUser = msg.member
 
     if(serverQueue){
-        addMusicToQueue(music, serverQueue)
+        serverQueue.musics.push(music)
+        sendQueueMessage(msg.channel, music, serverQueue.musics.length)
     }else{
         const voiceConnection = await msg.member.voiceChannel.join().catch(e => {
             throw `Não consegui me conectar ao seu canal de voz`
@@ -45,18 +37,19 @@ async function execute(msg, data, args){
 
         queueServer.musics.push(music)
 
-        play(msg.guild.id, queue)
+        play(msg, data)
     }
 }
 
-async function play(guildId, queue){
+async function play(msg, data){
 
-    const serverQueue = queue.get(guildId)
+    const queue = data.queue
+    const serverQueue = queue.get(msg.guild.id)
 
     //Saindo do canal de voz
     if(serverQueue.musics.length === 0){
         serverQueue.voiceConnection.disconnect()
-        queue.delete(guildId)
+        queue.delete(msg.guild.id)
         return
     }
 
@@ -66,74 +59,45 @@ async function play(guildId, queue){
 
     const dispatcher = serverQueue.voiceConnection.playStream(stream)
 
-    dispatcher.on('start', async () => {
-        const embed = new RichEmbed()
-                            .setColor(0x0088FF)
-                            .setTitle(music.title)
-                            .setDescription(`Duração: ${secToPrettyOutput(music.duration)}`)
-                            .setThumbnail(music.thumbnail)
-                            .setURL(music.video_url)
-                            .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
+    let collectorSkip = null
+    let collectorReplay = null
 
-        const last_message = await serverQueue.textChannel.send(embed)
-        // await last_message.react('⏸')
+    dispatcher.on('start', async () => {
+        const last_message = await sendPlayMessage(serverQueue.textChannel, music)
+        
         await last_message.react('⏩')
         
-        const collectorSkip = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '⏩')
+        collectorSkip = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '⏩')
         collectorSkip.on('collect', reaction => {
             if(reaction.count > 1) {
                 dispatcher.end()
             }
         })
+        collectorSkip.on('end', () => last_message.reactions.get('⏩').remove())
 
         await last_message.react('🔂')
-        const collectorReplay = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '🔂')
+        collectorReplay = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '🔂')
         collectorReplay.on('collect', reaction => {
             if(reaction.count > 1) {
-                addMusicToQueue(music, serverQueue)
+                const listener = data.commandsMap.get('replay')
+                listener(msg, data, [music.video_url])
             }
         })
+
+        collectorReplay.on('end', () => last_message.reactions.get('🔂').remove())
     })
 
     dispatcher.on('end', () => {
         serverQueue.musics.shift()
-        play(guildId, queue)
+        collectorSkip.stop()
+        play(msg, data)
     })
 
     dispatcher.on('error', e => {
         console.log(e)
+        collectorSkip.stop()
         serverQueue.textChannel.send(`Deu merda aqui: ${e}`)
     })
-}
-
-async function addMusicToQueue(music, serverQueue) {
-    serverQueue.musics.push(music)
-    const embed = new RichEmbed()
-                        .setColor(0x0088FF)
-                        .setTitle(music.title)
-                        .setDescription(`Adicionado a fila na posição ${serverQueue.musics.length - 1}`)
-                        .setThumbnail(music.thumbnail)
-                        .setURL(music.video_url)
-                        .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
-
-    serverQueue.textChannel.send(embed)
-}
-
-async function getLink(search){
-    let link = search
-    if(!ytdl.validateURL(link)){
-        link = await ytSearch.search(search)
-    }
-    console.log(`Link encontrado: ${link}`)
-    return link
-}
-
-function secToPrettyOutput(input){
-    const hours = parseInt(input / 3600)
-    const minutes = parseInt((input % 3600) / 60)
-    const seconds = input % 60
-    
-    return `${hours > 0 ? hours + "h" : ""} ${minutes > 0 ? minutes + "m" : ""} ${seconds}s`
 }
 
 module.exports = { command, execute }
