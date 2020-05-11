@@ -1,4 +1,4 @@
-const { validateURL } = require('ytdl-core')
+const { validateURL } = require('ytdl-core-discord')
 const { sendQueueMessage } = require('../helpers/music')
 
 const command = 'replay'

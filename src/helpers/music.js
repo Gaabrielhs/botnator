@@ -1,6 +1,6 @@
 const ytSearch =  require('../helpers/youtubeSearch')
-const ytdl = require('ytdl-core')
-const { RichEmbed } = require('discord.js')
+const ytdl = require('ytdl-core-discord')
+const { MessageEmbed } = require('discord.js')
 
 async function getMusic(sentence) {
     const link = await getLink(sentence)
@@ -18,24 +18,24 @@ async function getMusic(sentence) {
 }
 
 async function sendQueueMessage(channel, music, index) {
-    const embed = new RichEmbed()
+    const embed = new MessageEmbed()
                             .setColor(0x0088FF)
                             .setTitle(music.title)
                             .setDescription(`Adicionado a fila na posição ${index}`)
                             .setThumbnail(music.thumbnail)
                             .setURL(music.video_url)
-                            .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
+                            .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL())
     return await channel.send(embed)
 }
 
 async function sendPlayMessage(channel, music) {
-    const embed = new RichEmbed()
+    const embed = new MessageEmbed()
         .setColor(0x0088FF)
         .setTitle(music.title)
         .setDescription(`Duração: ${secToPrettyOutput(music.duration)}`)
         .setThumbnail(music.thumbnail)
         .setURL(music.video_url)
-        .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL)
+        .setAuthor(music.requestUser.nickname || music.requestUser.user.username, music.requestUser.user.avatarURL())
 
     return await channel.send(embed)
 }
@@ -53,7 +53,7 @@ async function getLink(search){
     if(!ytdl.validateURL(link)){
         link = await ytSearch.search(search)
     }
-    console.log(`Link encontrado: ${link}`)
+    console.log(`> Link: ${link}`)
     return link
 }
 

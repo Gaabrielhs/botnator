@@ -1,6 +1,6 @@
 {
   "name": "botnator",
-  "version": "3.1.1",
+  "version": "4.0.0",
   "description": "A quite simple modular bot engine",
   "main": "app.js",
   "repository": {
@@ -18,11 +18,16 @@
   },
   "homepage": "https://github.com/Gaabrielhs/botnator#readme",
   "dependencies": {
-    "discord.js": "^11.5.1",
+    "@discordjs/opus": "^0.3.2",
+    "bufferutil": "^4.0.1",
+    "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
+    "erlpack": "github:discordapp/erlpack",
     "ffmpeg-binaries": "^3.2.2",
     "googleapis": "^42.0.0",
-    "node-opus": "^0.3.2",
-    "ytdl-core": "^1.0.3"
+    "libsodium-wrappers": "^0.7.6",
+    "utf-8-validate": "^5.0.2",
+    "ytdl-core-discord": "^1.2.0",
+    "zlib-sync": "^0.1.6"
   }
 }

@@ -1,11 +1,11 @@
-const ytdl = require('ytdl-core')
+const ytdl = require('ytdl-core-discord')
 
 const { getMusic, sendQueueMessage, sendPlayMessage } = require('../helpers/music')
 
 const command = 'tocar'
 
-async function execute(msg, data, args){
-    if (!msg.member.voiceChannel) {
+async function execute(msg, data, args) {
+    if (!msg.member.voice.channel) {
         throw 'Você não está em um voice channel!'
     }
 
@@ -13,7 +13,7 @@ async function execute(msg, data, args){
     const serverQueue = queue.get(msg.guild.id)
 
     const sentence = args.join(' ')
-    console.log(`sentence: `,sentence)
+    console.log(`> Sentence: `,sentence)
 
     const music = await getMusic(sentence)
     music.requestUser = msg.member
@@ -22,9 +22,8 @@ async function execute(msg, data, args){
         serverQueue.musics.push(music)
         sendQueueMessage(msg.channel, music, serverQueue.musics.length)
     }else{
-        const voiceConnection = await msg.member.voiceChannel.join().catch(e => {
+        const voiceConnection = await msg.member.voice.channel.join().catch(e => {
             throw `Não consegui me conectar ao seu canal de voz`
-            //msg.channel.send(`Não consegui me conectar ao seu canal de voz`)
         })
 
         const queueServer = {
@@ -41,7 +40,7 @@ async function execute(msg, data, args){
     }
 }
 
-async function play(msg, data){
+async function play(msg, data) {
 
     const queue = data.queue
     const serverQueue = queue.get(msg.guild.id)
@@ -56,48 +55,56 @@ async function play(msg, data){
     const music = serverQueue.musics[0]
 
     const stream = await ytdl(music.video_url)
-
-    const dispatcher = serverQueue.voiceConnection.playStream(stream)
-
-    let collectorSkip = null
-    let collectorReplay = null
+    const dispatcher = serverQueue.voiceConnection.play(stream, { type: 'opus' })
+    let last_message = null
 
     dispatcher.on('start', async () => {
-        const last_message = await sendPlayMessage(serverQueue.textChannel, music)
+        last_message = await sendPlayMessage(serverQueue.textChannel, music)
         
-        await last_message.react('⏩')
-        
-        collectorSkip = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '⏩')
-        collectorSkip.on('collect', reaction => {
-            if(reaction.count > 1) {
-                dispatcher.end()
-            }
-        })
-        collectorSkip.on('end', () => last_message.reactions.get('⏩').remove())
+        const reactions = ['▶', '⏸', '⏩', '🔂']
+        reactions.forEach(r => last_message.react(r))
 
-        await last_message.react('🔂')
-        collectorReplay = last_message.createReactionCollector((reaction, user) => reaction.emoji.name === '🔂')
-        collectorReplay.on('collect', reaction => {
-            if(reaction.count > 1) {
-                const listener = data.commandsMap.get('replay')
-                listener(msg, data, [music.video_url])
-            }
+        const reactionCollector = last_message.createReactionCollector((reaction, user) => {
+            return reactions.includes(reaction.emoji.name) && user.id != data.client.user.id && !user.bot
         })
 
-        collectorReplay.on('end', () => last_message.reactions.get('🔂').remove())
+        reactionCollector.on('collect', reaction => {
+            switch(reaction.emoji.name) {
+                case '▶': dispatcher.resume()
+                break
+                
+                case '⏸': dispatcher.pause()
+                break
+
+                case '⏩': dispatcher.end()
+                break
+                
+                case '🔂':
+                    const listener = data.commandsMap.get('replay')
+                    listener(msg, data, [music.video_url])
+                break
+            }
+        })
+        reactionCollector.on('end', (reaction) => last_message.reactions.resolve(reaction).remove())
     })
 
-    dispatcher.on('end', () => {
+    dispatcher.on('finish', () => {
         serverQueue.musics.shift()
-        if(collectorSkip) collectorSkip.stop()
+        removeReactions()
         play(msg, data)
     })
 
     dispatcher.on('error', e => {
-        console.log(e)
-        if(collectorSkip) collectorSkip.stop()
+        removeReactions()
         serverQueue.textChannel.send(`Deu merda aqui: ${e}`)
     })
+
+    function removeReactions() {
+        const reactions = last_message.reactions
+        reactions.resolve('▶').remove()
+        reactions.resolve('⏸').remove()
+        reactions.resolve('⏩').remove()
+    }
 }
 
 module.exports = { command, execute }
