@@ -1,8 +1,10 @@
 const ytdl = require('ytdl-core-discord')
 
-const { getMusic, sendQueueMessage, sendPlayMessage } = require('../helpers/music')
+const { createMusic, getLink ,sendQueueMessage, sendPlayMessage } = require('../helpers/music')
 
 const command = 'tocar'
+
+const reactions = ['▶', '⏸', '⏩', '🔂']
 
 async function execute(msg, data, args) {
     if (!msg.member.voice.channel) {
@@ -13,31 +15,31 @@ async function execute(msg, data, args) {
     const serverQueue = queue.get(msg.guild.id)
 
     const sentence = args.join(' ')
-    console.log(`> Sentence: `,sentence)
+    const link = await getLink(sentence)
 
-    const music = await getMusic(sentence)
-    music.requestUser = msg.member
+    const music = await getMusic(msg, data, link)
 
-    if(serverQueue){
+    if(serverQueue) {
         serverQueue.musics.push(music)
-        sendQueueMessage(msg.channel, music, serverQueue.musics.length)
-    }else{
-        const voiceConnection = await msg.member.voice.channel.join().catch(e => {
-            throw `Não consegui me conectar ao seu canal de voz`
-        })
-
-        const queueServer = {
-            musics: [],
-            voiceConnection,
-            textChannel: msg.channel
-        }
-
-        queue.set(msg.guild.id, queueServer)
-
-        queueServer.musics.push(music)
-
-        play(msg, data)
+        await sendQueueMessage(serverQueue)
+        msg.delete()
+        return
     }
+
+    const voiceConnection = await msg.member.voice.channel.join().catch(e => {
+        throw `Não consegui me conectar ao seu canal de voz`
+    })
+
+    const queueServer = {
+        musics: [music],
+        voiceConnection,
+        queueMessage: null
+    }
+
+    queue.set(msg.guild.id, queueServer)
+
+    play(msg, data)
+    msg.delete()
 }
 
 async function play(msg, data) {
@@ -45,66 +47,95 @@ async function play(msg, data) {
     const queue = data.queue
     const serverQueue = queue.get(msg.guild.id)
 
-    //Saindo do canal de voz
     if(serverQueue.musics.length === 0){
         serverQueue.voiceConnection.disconnect()
+        serverQueue.queueMessage.delete()
         queue.delete(msg.guild.id)
         return
     }
 
     const music = serverQueue.musics[0]
 
-    const stream = await ytdl(music.video_url)
+    const stream = await ytdl(music.videoUrl)
     const dispatcher = serverQueue.voiceConnection.play(stream, { type: 'opus' })
-    let last_message = null
 
     dispatcher.on('start', async () => {
-        last_message = await sendPlayMessage(serverQueue.textChannel, music)
-        
-        const reactions = ['▶', '⏸', '⏩', '🔂']
-        reactions.forEach(r => last_message.react(r))
+        if(process.env.SINGLE_MUSIC_MESSAGE){
+            await sendQueueMessage(serverQueue)
+            return
+        }
 
-        const reactionCollector = last_message.createReactionCollector((reaction, user) => {
+        music.playMessage = await sendPlayMessage(music)
+        reactions.forEach(r => music.playMessage.react(r))
+
+        const reactionCollector = music.playMessage.createReactionCollector((reaction, user) => {
             return reactions.includes(reaction.emoji.name) && user.id != data.client.user.id && !user.bot
         })
 
-        reactionCollector.on('collect', reaction => {
+        reactionCollector.on('collect', async (reaction, user) => {
+            reaction.users.remove(user.id)
+
             switch(reaction.emoji.name) {
-                case '▶': dispatcher.resume()
+                case '▶': 
+                    dispatcher.resume()
                 break
                 
-                case '⏸': dispatcher.pause()
+                case '⏸': 
+                    dispatcher.pause()
                 break
 
-                case '⏩': dispatcher.end()
+                case '⏩': 
+                    dispatcher.end()
                 break
                 
                 case '🔂':
-                    const listener = data.commandsMap.get('replay')
-                    listener(msg, data, [music.video_url])
+                    execute(msg, data, [music.videoUrl])
                 break
             }
         })
-        reactionCollector.on('end', (reaction) => last_message.reactions.resolve(reaction).remove())
     })
 
-    dispatcher.on('finish', () => {
-        serverQueue.musics.shift()
-        removeReactions()
+    dispatcher.on('finish', async () => {
+        const lastMusic = serverQueue.musics.shift()
+        if(!process.env.SINGLE_MUSIC_MESSAGE){
+            removeReactions(lastMusic.playMessage.reactions)
+        }
         play(msg, data)
     })
 
-    dispatcher.on('error', e => {
-        removeReactions()
-        serverQueue.textChannel.send(`Deu merda aqui: ${e}`)
+    dispatcher.on('error', async e => {
+        const lastMusic = serverQueue.musics.shift()
+        if(!process.env.SINGLE_MUSIC_MESSAGE){
+            removeReactions(lastMusic.playMessage.reactions)
+        }
     })
+}
 
-    function removeReactions() {
-        const reactions = last_message.reactions
-        reactions.resolve('▶').remove()
-        reactions.resolve('⏸').remove()
-        reactions.resolve('⏩').remove()
+async function removeReactions(reactions) {
+    if(!reactions) return
+    try {
+        await reactions.resolve('▶').remove()
+        await reactions.resolve('⏸').remove()
+        await reactions.resolve('⏩').remove()
+    }catch(e) {
+        console.log(e)
     }
+}
+
+async function getMusic(msg, data, link) {
+    let music = null
+    data.queue.forEach(queue => {
+        if(music) return
+
+        let it = queue.musics.find(m => m.videoUrl == link)
+        if(it) {
+            music = Object.assign({}, it)
+            music.request.guildMember = msg.member
+            music.request.textChannel = msg.channel
+        }
+    })
+    
+    return music || createMusic(msg, link)
 }
 
 module.exports = { command, execute }

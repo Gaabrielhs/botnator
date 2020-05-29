@@ -5,27 +5,28 @@
  *
  */
 
-const {google} = require('googleapis')
-const auth_token = process.env.GOOGLE_API
+const { google } = require('googleapis');
+
+const authToken = process.env.GOOGLE_API;
 
 const youtube = google.youtube({
-    version: 'v3',
-    auth: auth_token
+  version: 'v3',
+  auth: authToken,
 });
 
-const base_url = 'https://www.youtube.com/watch?v='
+const baseUrl = 'https://www.youtube.com/watch?v=';
 
-async function search (searchQuery) {
-    const res = await youtube.search.list({
-        part: 'id',
-        type: 'video',
-        maxResults: 1,
-        q: searchQuery
-    })
+async function search(searchQuery) {
+  const res = await youtube.search.list({
+    part: 'id',
+    type: 'video',
+    maxResults: 1,
+    q: searchQuery,
+  });
 
-    if(res.data.items.length == 0) return null
-    const videoId = res.data.items[0].id.videoId
-    return base_url + videoId
+  if (res.data.items.length === 0) return null;
+  const { videoId } = res.data.items[0].id;
+  return baseUrl + videoId;
 }
 
-module.exports = { search }
+module.exports = { search };

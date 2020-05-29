@@ -5,12 +5,12 @@ async function execute(msg, data, args){
     const serverQueue = queue.get(msg.guild.id)
     
     if(!serverQueue){
-        // msg.channel.send(`Server sem fila ainda...`);
-        console.log('Server sem fila ainda...');
-        return
+        console.log('Server sem fila ainda...')
     }
-    serverQueue.musics = [];
-    serverQueue.voiceConnection.dispatcher.end();
+    
+    const musics = serverQueue.musics
+    serverQueue.musics = [musics[0]]
+    serverQueue.voiceConnection.dispatcher.end()
 }
 
 module.exports = { command, execute }
