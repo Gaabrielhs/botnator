@@ -5,10 +5,10 @@ async function execute(msg, data, args) {
         throw "Comando só pode ser executado por um admin"
     }
 
-    const parar = data.commandsMap.get('parar')
+    const parar = data.commands.get('parar')
     await parar(msg, data, args)
 
-    const tocarCommand = data.commandsMap.get('tocar')
+    const tocarCommand = data.commands.get('tocar')
     const newArgs = [
         "https://www.youtube.com/watch?v=6FhNsxb0C-k"
     ]
